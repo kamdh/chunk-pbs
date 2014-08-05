@@ -2,10 +2,13 @@
 
 import os
 
-cmdFn = '../sweep_random_fine_sweepfile'
-newCmdFn = 'sweepcleanup'
-#runDir = os.path.join(os.environ['HOME'], "prebotc/src/model") # where the jobs ran
+## following file contains the commands that were run
+cmdFn = os.path.join(os.environ['HOME'], "work/prebotc/src/pipeline/",
+                     "random_fine_g_sweep_sweepfile")
+## output filename's index in the command line (0 based)
 fnIdx = 3
+## this will contain the commands that should be rerun
+newCmdFn = 'sweepcleanup'
 
 try:
     os.remove(newCmdFn)
@@ -17,7 +20,6 @@ newf = open(newCmdFn, 'w')
 for line in cmds:
     cmdparts = line.split()
     fn = cmdparts[fnIdx]
-    #fn = os.path.join(runDir, cmdparts[fnIdx])
     if not os.path.isfile(fn):
         print fn
         newf.write(line)
