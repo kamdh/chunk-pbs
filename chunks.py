@@ -135,7 +135,7 @@ def main(argv=None):
                     cmdCounter = 0 # incremented outside block
             cmdCounter += 1
     except ValueError as e:
-        print "Warning: " + str(e)
+        print "Warning, caught ValueError: " + str(e)
     ## cleanup
     if ((cmdCounter-1) % chunksize) != 0:
         ## close pbs if our commands didn't fill the last chunk

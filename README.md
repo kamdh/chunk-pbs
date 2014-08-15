@@ -9,3 +9,10 @@ Contains:
 * testconfig.ini - example configuration file
 * sweepfile - example command file
 * missing.py - find missing output
+
+Usage example:
+```
+./chunks.py testconfig.ini
+cd test
+./qsubber.sh
+```
