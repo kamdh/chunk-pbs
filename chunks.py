@@ -4,10 +4,6 @@
 # submitChunks.py
 # Kameron Decker Harris
 #
-# 2014-02-13 first major version
-# 2014-02-27 vary chunk size and cmds per node (rather than ppn)
-# 2014-05-04 use external config files for better automation
-#
 # usage: submitChunks.py cfg.ini
 #  Submits the commands in a given file (line-separated) to a number of PBS 
 #  jobs, breaking them into chunks as appropriate. Options are set in cfg.ini
@@ -120,24 +116,26 @@ def main(argv=None):
     pbs = open(os.path.join(baseDir, pbsFn), 'w') # pbs is the current chunk job
     pbs.write(qsubheader(chunk, walltime, pbsTag, ppn, mem, baseDir, \
                           runDir, headerExtras, parallelOpts))
-    for line in cmds: # loop through all the commands
-        pbs.write(line)
-        if cmdCounter % chunksize == 0:
-            ## we've filled the chunk
-            pbs.write(qsubcloser())
-            pbs.close()
-            qsub.write("qsub -q " + queue + " " + pbsFn + "\n")
-            if chunk != totalchunks:
-                ## then we didn't finish and can open the next
-                chunk += 1
-                pbsFn = pbsTag + "_chunk%d.pbs" % chunk
-                pbs = open(os.path.join(baseDir, pbsFn), 'w')
-                pbs.write(qsubheader(chunk, walltime, pbsTag, ppn, mem, 
-                                      baseDir,runDir, headerExtras, 
-                                      parallelOpts))
-                cmdCounter = 0 # incremented outside block
-        cmdCounter += 1
-        
+    try:
+        for line in cmds: # loop through all the commands
+            pbs.write(line)
+            if cmdCounter % chunksize == 0:
+                ## we've filled the chunk
+                pbs.write(qsubcloser())
+                pbs.close()
+                qsub.write("qsub -q " + queue + " " + pbsFn + "\n")
+                if chunk != totalchunks:
+                    ## then we didn't finish and can open the next
+                    chunk += 1
+                    pbsFn = pbsTag + "_chunk%d.pbs" % chunk
+                    pbs = open(os.path.join(baseDir, pbsFn), 'w')
+                    pbs.write(qsubheader(chunk, walltime, pbsTag, ppn, mem, 
+                                          baseDir,runDir, headerExtras, 
+                                          parallelOpts))
+                    cmdCounter = 0 # incremented outside block
+            cmdCounter += 1
+    except ValueError as e:
+        print "Warning: " + str(e)
     ## cleanup
     if ((cmdCounter-1) % chunksize) != 0:
         ## close pbs if our commands didn't fill the last chunk
