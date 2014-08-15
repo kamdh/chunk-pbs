@@ -13,6 +13,6 @@ Contains:
 Usage example:
 ```
 ./chunks.py testconfig.ini  # generate pbs scripts
-cd test
-./qsubber.sh  # submits pbs scripts
+cd test                     # this directory is set in the .ini file
+./qsubber.sh                # submits pbs scripts
 ```
