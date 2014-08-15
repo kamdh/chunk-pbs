@@ -12,7 +12,7 @@ Contains:
 
 Usage example:
 ```
-./chunks.py testconfig.ini
+./chunks.py testconfig.ini  # generate pbs scripts
 cd test
-./qsubber.sh
+./qsubber.sh  # submits pbs scripts
 ```
