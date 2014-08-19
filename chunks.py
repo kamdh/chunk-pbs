@@ -61,8 +61,9 @@ def qsubheader(pbsnumber, walltime, pbsTag, ppn, mem, baseDir, \
     S += "#PBS -l nodes=1:ppn=%d,mem=%dgb,feature=%dcore\n" % (ppn,mem,ppn)
     S += "#PBS -l walltime=00:%d:00\n" % walltime
     ## output log
-    S += "#PBS -o " + \
-         os.path.abspath(os.path.join(baseDir, "log_chunk%d" % pbsnumber)) + "\n"
+    S += "#PBS -o " +\
+         os.path.abspath(os.path.join(baseDir, "log_chunk%d" % pbsnumber)) +\
+         "\n"
     S += "#PBS -j oe\n"
     S += "#PBS -d " + runDir + "\n" # set PBS_O_INITDIR
     S += "cd $PBS_O_INITDIR\n" # change to running directory
@@ -101,9 +102,14 @@ def main(argv=None):
         pass
     ## setup a few variables
     ## est. computing time per simulation, minutes
-    walltime = np.ceil(float(cmdruntime) * chunksize / useprocs) + extratime
+    if chunksize <= useprocs:
+        # it should take the same amount of time as running the command once
+        walltime = np.ceil(float(cmdruntime)) + extratime
+    else:
+        # we'll have to run multiple commands per processor
+        walltime = np.ceil(float(cmdruntime)*chunksize/useprocs) + extratime
     totalcmds = linecount(cmdFn)
-    totalchunks = np.ceil(float(totalcmds) / chunksize)
+    totalchunks = np.ceil(float(totalcmds)/chunksize)
     print "Breaking %d commands into %d chunks" % (totalcmds, totalchunks)
     qsub = open(qsubFn, 'w') # this file is a script to submit the job chunks
     qsub.write("#!/bin/bash\n")
