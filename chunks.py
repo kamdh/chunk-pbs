@@ -28,16 +28,16 @@ def parseargs(argv):
     qsubFn = os.path.join(baseDir, qsub_command_fn)
     ppn = cfg.getint("chunks", "ppn")
     mem = cfg.getfloat("chunks", "mem")
-    cmdspernode = cfg.getint("chunks", "useprocs")
+    useprocs = cfg.getint("chunks", "useprocs")
     queue = cfg.get("chunks", "queue")
     ## options to pass to parallel
-    ## only run cmdspernode at once
-    parallelOpts = "-j" + str(cmdspernode)
+    ## only run useprocs at once
+    parallelOpts = "-j" + str(useprocs)
     chunksize = cfg.getint("chunks", "chunksize")
     cmdruntime = cfg.getfloat("chunks", "cmdruntime")
     extratime = cfg.getfloat("chunks", "extratime")
     headerExtras = cfg.get("chunks", "headerextras")
-    return cmdFn, baseDir, runDir, pbsTag, qsubFn, ppn, mem, cmdspernode, \
+    return cmdFn, baseDir, runDir, pbsTag, qsubFn, ppn, mem, useprocs, \
         chunksize, cmdruntime, extratime, headerExtras, parallelOpts, queue
 
 def linecount(fn):
@@ -80,7 +80,7 @@ def qsubcloser():
 def main(argv=None):
     if argv is None:
         argv = sys.argv
-    cmdFn, baseDir, runDir, pbsTag, qsubFn, ppn, mem, cmdspernode, \
+    cmdFn, baseDir, runDir, pbsTag, qsubFn, ppn, mem, useprocs, \
         chunksize, cmdruntime, extratime, headerExtras, parallelOpts, queue\
         = parseargs(argv)
     print "Setting up for file " + cmdFn + " in directory " + baseDir
@@ -101,8 +101,7 @@ def main(argv=None):
         pass
     ## setup a few variables
     ## est. computing time per simulation, minutes
-    simruntime = np.ceil(float(cmdruntime) * chunksize / cmdspernode)
-    walltime = simruntime + extratime
+    walltime = np.ceil(float(cmdruntime) * chunksize / useprocs) + extratime
     totalcmds = linecount(cmdFn)
     totalchunks = np.ceil(float(totalcmds) / chunksize)
     print "Breaking %d commands into %d chunks" % (totalcmds, totalchunks)
