@@ -23,5 +23,10 @@ for line in cmds:
     if not os.path.isfile(fn):
         print fn
         newf.write(line)
+    else:
+        statinfo=os.stat(fn)
+        if statinfo.st_size < 1024:
+            print fn
+            newf.write(line)
 cmds.close()
 newf.close()
