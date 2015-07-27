@@ -31,8 +31,11 @@ def parseargs(argv):
     useprocs = cfg.getint("chunks", "useprocs")
     queue = cfg.get("chunks", "queue")
     ## options to pass to parallel
-    ## only run useprocs at once
-    parallelOpts = "-j" + str(useprocs)
+    ## 1. only run useprocs at once
+    parallelOpts = "-j "+str(useprocs)
+    ## 2. send 2 TERM signals 1 s apart, then wait 2 minutes before KILL
+    # parallelOpts += " --termseq TERM,1000,TERM,120000,KILL,25"
+    ## 3. save output into files
     chunksize = cfg.getint("chunks", "chunksize")
     cmdruntime = cfg.getfloat("chunks", "cmdruntime")
     extratime = cfg.getfloat("chunks", "extratime")
@@ -68,8 +71,23 @@ def qsubheader(pbsnumber, walltime, pbsTag, ppn, mem, baseDir, \
     S += "#PBS -d " + runDir + "\n" # set PBS_O_INITDIR
     S += "cd $PBS_O_INITDIR\n" # change to running directory
     S += headerExtras + "\n"
-    ## pipe all commands to parallel using a heredoc
-    S += "cat << CHUNK_EOF | parallel " + parallelOpts + "\n"
+#     S += """
+# function processterm {
+#   if [[ termflag -eq 0 ]]
+#   then
+#     termflag=1
+#     thepid=$(pgrep parallel)
+#     echo "[$(date)] TERM caught, sending to $thepid"
+#     kill -s TERM $thepid
+#   fi
+# }
+
+# #termid=$(tty | sed -e 's/\/dev\///')
+# termflag=0
+# trap processterm TERM
+# """
+    ## send commands to parallel using a heredoc
+    S += "$HOME/.local/bin/parallel " + parallelOpts + " << CHUNK_EOF \n"
     return S
 
 def qsubcloser():
